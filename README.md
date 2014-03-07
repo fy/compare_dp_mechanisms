@@ -47,7 +47,7 @@ First of all, untar the example data:
 
 Then convert raw data to genotype tables:
 
-    python ./notebook/raw_to_geno_table.py ../example/case_genotypes.dat ../example/anticase_genotypes.dat ./table.tmp
+    python ./notebook/raw_to_geno_table.py ./example/case_genotypes.dat ./example/anticase_genotypes.dat ./table.tmp
 
 To get results from the **Laplace mechanism**, run:
 
