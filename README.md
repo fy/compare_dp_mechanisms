@@ -31,7 +31,7 @@ The disease model file describes a disease with 2 causative SNPs having addive e
 
 
 # Analysis on the example data #
-See [url]
+See http://nbviewer.ipython.org/github/fy/compare_dp_mechanisms/blob/master/notebooks/compare_all_dp_mechanisms.ipynb
 
 Or if you have ipython notebook installed, run in the terminal
 
