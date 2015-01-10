@@ -47,23 +47,23 @@ First of all, untar the example data:
 
 Then convert raw data to genotype tables:
 
-    python ./notebook/raw_to_geno_table.py ./example/case_genotypes.dat ./example/anticase_genotypes.dat ./table.tmp
+    python ./notebooks/raw_to_geno_table.py ./example/case_genotypes.dat ./example/anticase_genotypes.dat ./table.tmp
 
 To get results from the **Laplace mechanism**, run:
 
-    python ./notebook/write_chisquare.py ./table.tmp ./chisquare.tmp
-    python ./notebook/get_laplace_results.py k e n_case n_control ./chisquare.tmp
+    python ./notebooks/write_chisquare.py ./table.tmp ./chisquare.tmp
+    python ./notebooks/get_laplace_results.py k e n_case n_control ./chisquare.tmp
 
 where "k" is the number of top SNPs to release, "e" is the privacy budget (commonly known as epsilon in epsilon-differential privacy), and "n_case" and "n_control" are the numbers of cases and controls.
 
 Similarly, to get results from the **Exponential mechanism**, run:
 
-    python ./notebook/write_chisquare.py ./table.tmp ./chisquare.tmp
-    python ./notebook/get_expo_results.py k e n_case n_control ./chisquare.tmp
+    python ./notebooks/write_chisquare.py ./table.tmp ./chisquare.tmp
+    python ./notebooks/get_expo_results.py k e n_case n_control ./chisquare.tmp
 
 To get results from the **Johnson & Shmatikov method**, run:
 
-    python ./notebook/write_JS_distance.py -p pval ./table.tmp ./js_distance.tmp
-    python ./notebook/get_JS_results.py k e ./js_distance.tmp
+    python ./notebooks/write_JS_distance.py -p pval ./table.tmp ./js_distance.tmp
+    python ./notebooks/get_JS_results.py k e ./js_distance.tmp
 
 where "pval" is the p-value specified in [Johnson & Shmatikov (2013)](http://dl.acm.org/citation.cfm?id=2487687), which can be interpreted as the overall p-value (say 0.05) of the multiple testing problem involving thousands of SNPs.
