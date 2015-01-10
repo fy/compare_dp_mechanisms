@@ -56,7 +56,7 @@ To get results from the **Laplace mechanism**, run:
 
 where "k" is the number of top SNPs to release, "e" is the privacy budget (commonly known as epsilon in epsilon-differential privacy), and "n_case" and "n_control" are the number of cases and controls.
 
-Simularly, to get results from the **Exponential mechanism**, run:
+Similarly, to get results from the **Exponential mechanism**, run:
 
     python ./notebook/write_chisquare.py ./table.tmp ./chisquare.tmp
     python ./notebook/get_expo_results.py k e n_case n_control ./chisquare.tmp
