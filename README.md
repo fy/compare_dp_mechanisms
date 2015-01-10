@@ -35,9 +35,10 @@ See http://nbviewer.ipython.org/github/fy/compare_dp_mechanisms/blob/master/note
 
 Or if you have ipython notebook installed, run in the terminal
 
-    ./start_ipynb.sh
+    cd notebooks
+    ../start_ipynb.sh
 
-and open the `compare_all_dp_mechanisms` notebook in the browser. 
+and open the `compare_all_dp_mechanisms` notebook in the browser. By default, the iPyhon notebook is at [http://localhost:8888/](http://localhost:8888/)
 
 
 # How to use the code #
