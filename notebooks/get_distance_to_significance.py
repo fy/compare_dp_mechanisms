@@ -45,17 +45,11 @@ DEBUG = True
 # <codecell>
 
 utility_functions = import_anywhere('utility_functions', [SCRIPT_DIR])
-from utility_functions import chisq_stat, chisq_gradient
+from utility_functions import chisq_stat
 
 # <codecell>
 
 ## direction vectors for the case row and the genotype total of a 2x3 genotype table: (r_0, r_1, n_0, n_1)
-DIRECTION_VECTORS = np.array([
-    (0, 0, -1, 1), (0, 0, -1, 0), (0, 0, 1, -1), (0, 0, 1, 0),
-    (0, 0, 0, -1), (0, 0, 0, 1),
-    (-1, 1, -1, 1), (-1, 0, -1, 0), (1, -1, 1, -1), (1, 0, 1, 0),
-    (0, -1, 0, -1), (0, 1, 0, 1),
-])
 
 def augment_direction_vector(uu):
     """Augment the direction vectors so that they are compatible with 2x3 input 
@@ -105,90 +99,83 @@ def greedy_distance_to_significance_flip(input_table, threshold_pval):
 
     Returns:
         The Hamming distance. Return "None" if no such distance can be found.
-
-    At any point, say v, if the absolute value of the directional
-    derivative is maximized in the direction u, then move v in the direction
-    of u.
     """
-    def find_best_legal_move(input_table, sig_direction):
-        """Find the best legal move conditioning on the direction of the change
-            in significance.
-        """
-        ## determine which moves are legal
-        legal_moves = np.array([move_is_legal(input_table, augment_direction_vector(ee))
-                                for ee in DIRECTION_VECTORS])
-        if not np.any(legal_moves):
-            ## return if not legal move is possible
-            return None
-        legal_move_indices = np.arange(len(DIRECTION_VECTORS))[legal_moves]
-        ## get directional_derivatives
-        gradient = chisq_gradient(input_table)
-        directional_derivatives = np.array([
-            np.dot(gradient, ee) for ee in np.array(DIRECTION_VECTORS)[legal_moves]])
-        assert np.max(directional_derivatives * sig_direction) >= 0,\
-        "The direction of the significance flip is %d " % (sig_direction) +\
-        "but all of the directional derivatives are of the opposite sign." +\
-        "The directional derivatives are: {}".format(str(directional_derivatives))
-        if sig_direction > 0:
-            best_move_idx = legal_move_indices[np.argmax(directional_derivatives)]
-        else:
-            best_move_idx = legal_move_indices[np.argmin(directional_derivatives)]
-        if gradient == 0:
-            print input_table
-        return DIRECTION_VECTORS[best_move_idx]
-    ## make a copy of the input table
-    input_table = input_table.copy()
-    dist = 0
-    threshold_chisq = stats.chi2.isf(threshold_pval, 2)
+    threshold_chisq = stats.chi2.isf(threshold_pval, 1) # !!! allelic chisquare
     ## If sig_direction > 0, make table significant.
     ## If sig_direction < 0, make table insignificant.
     sig_direction = 1 if chisq_stat(input_table) < threshold_chisq else -1
-    curr_table = input_table.copy()
-    while 1:
-        ## find best direction vector
-        uu = find_best_legal_move(curr_table, sig_direction)
-        if uu is None:
-            break
-        uu = augment_direction_vector(uu)
-        curr_table += uu
-        if DEBUG:
-            print("chi-sqaure stat = {}, curr_table={}, uu={}".format(
-                  chisq_stat(curr_table), 
-                  str(curr_table.tolist()),
-                  str(uu.tolist())))
-        dist += 1
-        if sig_direction * (chisq_stat(curr_table) - threshold_chisq) >= 0:
+    ## if table is insignificant, then we want to make it significant
+    if sig_direction >= 1:
+        (H1, H2) = 0, 0
+        # find H1: decrease r_0 then decrease r_1
+        curr_table = input_table.copy()     ## make a copy of the input table
+        while 1:
+            # if r_0 can be decreased 
+            if move_is_legal(curr_table, augment_direction_vector(np.array((-1, 0, -1, 0)))):
+                next_move = np.array((-1, 0, -1, 0))
+            # if r_0 cannot be decreased anymore
+            else:
+                # if r_1 can be decreased
+                if move_is_legal(curr_table, augment_direction_vector(np.array((0, -1, 0, -1)))):
+                    next_move = np.array((0, -1, 0, -1))
+                else:
+                    # if all things fail
+                    break
+            H1 += 1
+            curr_table += augment_direction_vector(next_move)
+            if chisq_stat(curr_table) >= threshold_chisq:
             ## Significance has flipped!
-            return dist * sig_direction
+                 break
+        # find H2: increase r_0 then increase r_0 and decrease r_1 at the same time
+        curr_table = input_table.copy()    ## make a copy of the input table
+        while 1:
+            # if r_0 can be increased 
+            if move_is_legal(curr_table, augment_direction_vector(np.array((1, 0, 1, 0)))):
+                next_move = np.array((1, 0, 1, 0))
+            # if r_0 cannot be increased anymore
+            else:
+                # if r_0 can be increased with r_1 being decreased
+                if move_is_legal(curr_table, augment_direction_vector(np.array((1, -1, 1, -1)))):
+                    next_move = np.array((1, -1, 1, -1))
+                else:
+                    # if all things fail
+                    break
+            H2 += 1
+            curr_table += augment_direction_vector(next_move)
+            if chisq_stat(curr_table) >= threshold_chisq:
+            ## Significance has flipped!
+                 break       
+        return sig_direction * min([H1, H2])
+    ## if table is significant, then we want to make it insignificant
+    if sig_direction <= -1: 
+        dist = 0
+        # if table is to the right of red line (decreases as r_0 decreases)
+        if (2 * input_table[0,0] + input_table[0,1]) * np.sum(input_table[1]) > \
+            (2 * input_table[1,0] + input_table[1,1]) * np.sum(input_table[0]):
+            curr_table = input_table.copy()    ## make a copy of the input table
+            while 1:
+                next_move = np.array((-1, 0, -1, 0))
+                # if r_0 can be increased 
+                if not move_is_legal(curr_table, augment_direction_vector(next_move)):
+                    break
+                curr_table += augment_direction_vector(next_move)
+                dist += 1
+                if chisq_stat(curr_table) < threshold_chisq:
+                ## Significance has flipped!
+                     break              
+        # if table is to the right of red line (decreases as r_0 increases)
+        else:
+            curr_table = input_table.copy()    ## make a copy of the input table
+            while 1:
+                next_move = next_move = np.array((1, 0, 1, 0))
+                # if r_0 can be increased 
+                if not move_is_legal(curr_table, augment_direction_vector(next_move)):
+                    break
+                curr_table += augment_direction_vector(next_move)
+                dist += 1
+                if chisq_stat(curr_table) < threshold_chisq:
+                ## Significance has flipped!
+                     break      
+        return dist * sig_direction
     return None
-
-# <codecell>
-
-def main():
-    print("Begin to debug.")
-    ## check chisq_stat()
-    tt1 = np.array([[16, 17, 18],
-                    [10, 20, 5]])    
-    assert round(chisq_stat(tt1), 3) == 6.214, "Error with chisq_stat()."
-    ## check chisq_gradient()
-    grad1 = chisq_gradient(tt1)
-    assert map(round, grad1, [3] * len(grad1)) == [-0.334, -0.646, 0.234, 0.401],\
-        "Error with chisq_gradient()."
-    tt2 = np.array([[0, 17, 18],
-                    [10, 20, 5]]) 
-    grad2 = chisq_gradient(tt2)
-    assert map(round, grad2, [3] * len(grad2)) == [-1.565, -0.646, 0.612, 0.401],\
-        "Error with chisq_gradient()."
-    ## check move_is_legal()
-    assert move_is_legal(tt1, augment_direction_vector((1, -1, 1, -1))),\
-        "Error with move_is_legal()."
-    assert not move_is_legal(tt2, augment_direction_vector((-1, 0, -1, 0))),\
-        "Error with move_is_legal()."
-    print("Finish debugging.")
-
-if __name__ == "__main__":
-    main()
-
-# <codecell>
-
 

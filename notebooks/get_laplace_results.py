@@ -36,7 +36,7 @@ def import_anywhere(module_name, paths):
 # <codecell>
 
 utility_functions = import_anywhere('utility_functions', [SCRIPT_DIR])
-from utility_functions import get_chisq_sensitivity
+from utility_functions import get_allelic_test_sensitivity as get_chisq_sensitivity
 
 # <markdowncell>
 

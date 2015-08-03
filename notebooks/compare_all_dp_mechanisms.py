@@ -249,7 +249,7 @@ plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 for ii, MM in enumerate(PARAMS.MM_vec):
     for jj, sig_level in enumerate(PARAMS.sig_level_vec):
         ax = ax_array[ii, jj]
-        ax.set_xlim([0, np.max(PARAMS.epsilon_vec) + 5])
+        ax.set_xlim([-100, np.max(PARAMS.epsilon_vec) + 5])
         for kk, method in enumerate(perturb_result_utility):
             xx = PARAMS.epsilon_vec
             yy = map(perturb_result_utility[method][sig_level][MM].get, xx)
@@ -278,4 +278,39 @@ for ii, MM in enumerate(PARAMS.MM_vec):
         if ii == len(PARAMS.MM_vec) - 1 and jj == 0:
             ax.set_ylabel('Utility')
             ax.set_xlabel('Privacy budget ($\epsilon$)')
+
+# <codecell>
+
+fig, ax = plt.subplots(1, 1, figsize=(7,7))
+plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+ax.tick_params(labelsize=16)
+for ii, MM in enumerate([PARAMS.MM_vec[-2]] * 4):
+    for jj, sig_level in enumerate([PARAMS.sig_level_vec[1]]):
+        ax.set_xlim([-100, np.max(PARAMS.epsilon_vec) + 5])
+        for kk, method in enumerate(perturb_result_utility):
+            xx = PARAMS.epsilon_vec
+            yy = map(perturb_result_utility[method][sig_level][MM].get, xx)
+            # ax.plot(xx, yy, color=MY_COLORS[kk % len(MY_COLORS)], label=method, 
+            #         linestyle='-', marker=MARKERS[kk], markersize=5)
+            ax.plot(xx, yy, color=MY_COLORS[kk % len(MY_COLORS)], label=method, 
+                    linestyle=LINE_STYLES[kk], linewidth=2.0, marker=MARKERS[kk], 
+                    markersize=7, )
+        if ii == 0 and jj == 0:
+            # ax.set_ylabel('Proportion of significant SNPs recovered')
+            ax.legend(bbox_to_anchor=(0.7, 1.05, 1, .102), loc=2, ncol=1, 
+                      prop={'size':12}, mode="tight", borderaxespad=0.)            
+        if ii == 0:  # set column title on the first row
+            ## set title
+            ax.text(0.5, 1.05, 
+                r'$p$-value=$\frac{%s}{%s}$, M=%s              ' % (str(sig_level), str(snp_num), str(MM)),
+                horizontalalignment='center',
+                size=18,
+                transform=ax.transAxes)
+        if ii == 0 and jj == 0:
+            ax.set_ylabel('Utility', fontsize=18)
+            ax.set_xlabel('Privacy budget ($\epsilon$)', fontsize=18)
+plt.savefig("risk-util-1x1.svg")
+
+# <codecell>
+
 
