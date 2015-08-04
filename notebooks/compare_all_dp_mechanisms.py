@@ -45,7 +45,7 @@ PARAMS.NN_control = 1000  # number of controls
 PARAMS.MM_vec = np.array([1, 2, 3, 10])
 # PARAMS.epsilon_vec = np.concatenate((np.arange(1, 20, 5), 
 #                                      np.arange(21, 1522, 100)))
-PARAMS.epsilon_vec = np.arange(1, 1522, 300)
+PARAMS.epsilon_vec = np.arange(1, 102, 20)
 PARAMS.NN_perturb = 20
 # PARAMS.sig_level_vec = np.array([0.1, 0.05, 0.01])
 PARAMS.sig_level_vec = np.array([0.1, 0.05])
@@ -249,7 +249,7 @@ plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 for ii, MM in enumerate(PARAMS.MM_vec):
     for jj, sig_level in enumerate(PARAMS.sig_level_vec):
         ax = ax_array[ii, jj]
-        ax.set_xlim([-100, np.max(PARAMS.epsilon_vec) + 5])
+        ax.set_xlim([-10, np.max(PARAMS.epsilon_vec) + 5])
         for kk, method in enumerate(perturb_result_utility):
             xx = PARAMS.epsilon_vec
             yy = map(perturb_result_utility[method][sig_level][MM].get, xx)
@@ -286,7 +286,7 @@ plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 ax.tick_params(labelsize=16)
 for ii, MM in enumerate([PARAMS.MM_vec[-2]] * 4):
     for jj, sig_level in enumerate([PARAMS.sig_level_vec[1]]):
-        ax.set_xlim([-100, np.max(PARAMS.epsilon_vec) + 5])
+        ax.set_xlim([-10, np.max(PARAMS.epsilon_vec) + 5])
         for kk, method in enumerate(perturb_result_utility):
             xx = PARAMS.epsilon_vec
             yy = map(perturb_result_utility[method][sig_level][MM].get, xx)
@@ -310,7 +310,4 @@ for ii, MM in enumerate([PARAMS.MM_vec[-2]] * 4):
             ax.set_ylabel('Utility', fontsize=18)
             ax.set_xlabel('Privacy budget ($\epsilon$)', fontsize=18)
 plt.savefig("risk-util-1x1.svg")
-
-# <codecell>
-
 
